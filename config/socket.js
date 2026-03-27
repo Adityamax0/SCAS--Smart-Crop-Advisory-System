@@ -60,4 +60,9 @@ const notifyNewTicket = (district, ticketData) => {
   console.log(`[SOCKET] Emitted new_ticket to room: ${room}`);
 };
 
-module.exports = { initSocket, getIO, notifyNewTicket };
+module.exports = { 
+  initSocket, 
+  getIO, 
+  getSocket: getIO, // Alias for compatibility with older controllers
+  notifyNewTicket 
+};

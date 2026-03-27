@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
-const { getSocket, initSocket } = require('../socket'); // Ensure socket is initialized if running in same process, but here we just need DB
+const { getSocket, initSocket } = require('../config/socket'); // Ensure socket is initialized if running in same process, but here we just need DB
 
 /**
  * SCAS SIREN TEST UTILITY

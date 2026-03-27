@@ -1,5 +1,5 @@
 const Ticket = require('../models/Ticket');
-const { getSocket } = require('../socket');
+const { getSocket } = require('../config/socket');
 const { sendNotification } = require('../services/notificationService');
 const User = require('../models/User');
 

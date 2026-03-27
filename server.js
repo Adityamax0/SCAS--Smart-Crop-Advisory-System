@@ -77,15 +77,19 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ──────────────────────────────────
-// Health Check
+// Root Landing Route
 // ──────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'SCAS API is running',
-    environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString(),
-  });
+app.get('/', (req, res) => {
+  res.status(200).send(`
+    <div style="font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f0f7f4; color: #2d6a4f; text-align: center;">
+      <h1 style="font-size: 3rem; margin-bottom: 0;">🌾 SCAS 2026</h1>
+      <p style="font-size: 1.2rem; opacity: 0.8;">Smart Crop Advisory System | Production API</p>
+      <div style="margin-top: 20px; padding: 10px 20px; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #d8e3dc;">
+        Status: <span style="font-weight: bold; color: #2196f3;">● LIVE</span>
+      </div>
+      <p style="margin-top: 40px; font-size: 0.9rem; color: #666;">Government of India | DPI Multi-Regional Utility</p>
+    </div>
+  `);
 });
 
 // ──────────────────────────────────

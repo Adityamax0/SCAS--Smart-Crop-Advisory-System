@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit'); // Import rateLimit
 const { register, login, getMe, getDemoCredentials } = require('../controllers/authController');
-const authenticate = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 

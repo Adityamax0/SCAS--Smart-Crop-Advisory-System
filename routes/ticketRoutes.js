@@ -7,7 +7,7 @@ const {
   escalateTicket,
   scanDisease,
 } = require('../controllers/ticketController');
-const authenticate = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const authorize = require('../middleware/rbac');
 const upload = require('../middleware/upload');
 

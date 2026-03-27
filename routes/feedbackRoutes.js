@@ -3,7 +3,7 @@ const router = express.Router();
 const Feedback = require('../models/Feedback');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const protect = require('../middleware/auth');
+const { protect } = require('../middleware/auth');
 
 /**
  * @route   POST /api/feedback

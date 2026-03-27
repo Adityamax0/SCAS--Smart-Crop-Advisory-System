@@ -1,6 +1,6 @@
 const express = require('express');
 const { getDashboardStats, getEscalationReport } = require('../controllers/adminController');
-const authenticate = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const authorize = require('../middleware/rbac');
 const User = require('../models/User');
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const { getOperationalStats } = require('../controllers/analyticsController');
-const authenticate = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const authorize = require('../middleware/rbac');
 
 const router = express.Router();

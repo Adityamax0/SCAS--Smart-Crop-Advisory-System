@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/auth');
 const agriStackService = require('../services/agriStackService');
 
 /**

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const simulationController = require('../controllers/simulationController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
+const { protect, restrictTo } = require('../middleware/auth');
 
 /**
  * 🌪️ SCAS: Digital Twin Simulation Routes

@@ -42,6 +42,7 @@ const authLimiter = rateLimit({
 
 
 // Route imports
+const { protect } = require('./middleware/auth');
 const authRoutes = require('./routes/authRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const syncRoutes = require('./routes/syncRoutes');

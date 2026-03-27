@@ -46,6 +46,10 @@ router.post('/verify-agristack', protect, async (req, res) => {
       { new: true }
     );
 
+    res.status(200).json({
+      success: true,
+      message: 'UFSI Handshake Successful: AgriStack ID linked and verified.',
+      data: updatedUser
     });
 
   } catch (error) {

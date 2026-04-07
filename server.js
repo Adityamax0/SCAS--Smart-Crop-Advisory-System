@@ -77,7 +77,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ──────────────────────────────────
-// Root Landing Route
+// Root & Health Routes
 // ──────────────────────────────────
 app.get('/', (req, res) => {
   res.status(200).send(`
@@ -90,6 +90,15 @@ app.get('/', (req, res) => {
       <p style="margin-top: 40px; font-size: 0.9rem; color: #666;">Government of India | DPI Multi-Regional Utility</p>
     </div>
   `);
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'SCAS API is running',
+    environment: process.env.NODE_ENV || 'production',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ──────────────────────────────────

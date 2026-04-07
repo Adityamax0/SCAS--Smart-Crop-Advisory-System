@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 const connectDB = require('./config/db');
 const { connectRedis } = require('./config/redis');
 const { configureCloudinary } = require('./config/cloudinary');
@@ -33,7 +35,8 @@ const aiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 1000, // Developer mode: bumped from 10 to 1000 to prevent lockout
+  max: 10, // Production: max 10 failed auth attempts per hour per IP
+  skipSuccessfulRequests: true, // Only count failed attempts toward the limit
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many auth attempts. Please try again later.' }
@@ -71,10 +74,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // ──────────────────────────────────
+// Security Middleware
+// ──────────────────────────────────
+app.use(helmet()); // Sets 11 HTTP security headers (XSS, HSTS, CSP etc.)
+
+// ──────────────────────────────────
 // Body Parsing
 // ──────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(mongoSanitize()); // Strip $ and . from req.body/query/params to prevent NoSQL injection
 
 // ──────────────────────────────────
 // Root & Health Routes

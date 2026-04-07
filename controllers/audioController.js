@@ -1,5 +1,6 @@
 // SCAS Production Build - Sync ID: 1774123456789
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const groqService = require('../services/groqService');
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
@@ -86,6 +87,7 @@ exports.processAudio = async (req, res) => {
     let newTicket = null;
     if (analysis.action === 'ticket' || analysis.confidence === 'low') {
       newTicket = await Ticket.create({
+        clientId: `audio-${uuidv4()}`,
         farmer: req.user?._id,
         description: `[VOICE TRANSCRIPT]: ${transcription}`,
         category: analysis.category || 'other',
@@ -111,6 +113,7 @@ exports.processAudio = async (req, res) => {
     if (req.user) {
       try {
         const fallbackTicket = await Ticket.create({
+          clientId: `audio-fallback-${uuidv4()}`,
           farmer: req.user._id,
           description: `🚨 [SYSTEM FALLBACK]: Audio processing failed. Transcription Buffer: "${req.body.text || 'Audio Stream Attached'}"`,
           priority: 'high',

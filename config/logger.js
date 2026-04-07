@@ -11,7 +11,6 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.errors({ stack: true }),
-    winston.format.timestamp(),
     winston.format.json(),
     winston.format.metadata({ fillExcept: ['message', 'level', 'timestamp', 'label'] })
   ),

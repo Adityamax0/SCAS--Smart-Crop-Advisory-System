@@ -35,7 +35,7 @@ exports.triggerScenario = async (req, res) => {
         );
 
         // 2. Emit global Siren event via Socket.io to all workers in that district
-        io.to(district).emit('emergency_broadcast', {
+        io.to(`district:${district.toLowerCase()}`).emit('emergency_broadcast', {
           type: 'HAILSTORM_WARNING',
           message: `📉 URGENT: Hailstorm detected in ${district}. All active field tickets upgraded to CRITICAL. Activate Emergency Protocol.`,
           severity: 'high'
@@ -46,7 +46,7 @@ exports.triggerScenario = async (req, res) => {
 
       case 'pest_outbreak':
         // Simulation of a fast-spreading locust or pest issue
-        io.to(district).emit('emergency_broadcast', {
+        io.to(`district:${district.toLowerCase()}`).emit('emergency_broadcast', {
           type: 'PEST_OUTBREAK',
           message: `🐝 ALERT: Locust activity detected near ${district} borders. High surveillance required for all Paddy crops.`,
           severity: 'medium'

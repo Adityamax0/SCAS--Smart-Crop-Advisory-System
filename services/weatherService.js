@@ -23,9 +23,15 @@ const getWeatherData = async (lat, lon) => {
         daily = response.data.daily;
       } catch (err) {
         console.warn(`[WEATHER] API Failed (${err.message}). Using Simulation Data.`);
-        // Simulation Data for offline/blocked environments
+        // Generate dynamic dates starting from today so forecast never looks stale
+        const today = new Date();
+        const dynamicDates = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + i);
+          return d.toISOString().split('T')[0];
+        });
         daily = {
-          time: [new Date().toISOString().split('T')[0], '2026-03-22', '2026-03-23', '2026-03-24', '2026-03-25', '2026-03-26', '2026-03-27'],
+          time: dynamicDates,
           temperature_2m_max: [32, 33, 31, 30, 31, 32, 33],
           temperature_2m_min: [22, 23, 21, 20, 21, 22, 23],
           precipitation_sum: [0, 0, 0, 5, 0, 0, 0],

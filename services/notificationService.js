@@ -2,16 +2,41 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 
 // ──────────────────────────────────
+// Initialize SDK clients once at module load time (NOT on every call)
+// ──────────────────────────────────
+const twilioClient = (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)
+  ? require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
+
+let firebaseAdmin = null;
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
+  try {
+    firebaseAdmin = require('firebase-admin');
+    if (!firebaseAdmin.apps.length) {
+      firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('[PUSH] Firebase admin init failed:', e.message);
+    firebaseAdmin = null;
+  }
+}
+
+// ──────────────────────────────────
 // Twilio SMS
 // ──────────────────────────────────
 const sendSMS = async (phone, content) => {
   try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-      console.warn(`[SMS] Simulation Mode: Key missing. To: ${phone}, Text: ${content}`);
+    if (!twilioClient) {
+      console.warn(`[SMS] Simulation Mode: Twilio not configured. To: ${phone}, Text: ${content}`);
       return { success: true, sid: 'sim_sms_' + Date.now() };
     }
-    const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    const message = await twilio.messages.create({
+    const message = await twilioClient.messages.create({
       body: content,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phone,
@@ -26,21 +51,11 @@ const sendSMS = async (phone, content) => {
 
 const sendPush = async (fcmToken, title, content) => {
   try {
-    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY) {
-      console.warn(`[PUSH] Simulation Mode: Key missing. Title: ${title}`);
+    if (!firebaseAdmin) {
+      console.warn(`[PUSH] Simulation Mode: Firebase not configured. Title: ${title}`);
       return { success: true, messageId: 'sim_push_' + Date.now() };
     }
-    const admin = require('firebase-admin');
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        }),
-      });
-    }
-    const response = await admin.messaging().send({
+    const response = await firebaseAdmin.messaging().send({
       token: fcmToken,
       notification: { title, body: content },
     });

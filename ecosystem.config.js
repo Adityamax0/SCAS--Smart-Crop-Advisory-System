@@ -3,8 +3,8 @@ module.exports = {
     {
       name: "scas-backend",
       script: "./server.js",
-      instances: "max",
-      exec_mode: "cluster",
+      instances: 1, // Single instance: Socket.io cluster mode requires Redis adapter (@socket.io/redis-adapter) for multi-process room sync
+      exec_mode: "fork",
       autorestart: true,
       watch: false,
       max_memory_restart: "500M",

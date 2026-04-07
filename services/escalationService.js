@@ -47,10 +47,12 @@ const assignToNearestWorker = async (ticket) => {
  * Escalate ticket from Worker tier to Sub-Head tier
  */
 const escalateToSubHead = async (ticket, reason = 'Unresolved beyond threshold') => {
+  // Join back to the farmer to determine their district for correct subhead matching
+  const farmer = await User.findById(ticket.farmer).select('district');
   const subhead = await User.findOne({
     role: 'subhead',
     isActive: true,
-    district: ticket.location ? undefined : undefined, // District match if available
+    district: farmer?.district, // Only match subheads in the SAME district
   });
 
   if (!subhead) {
@@ -184,10 +186,8 @@ const reassignPendingTickets = async (newWorker) => {
       ticket.status = 'assigned';
       ticket.slaBreached = false; // Reset breach status
       
-      // CRITICAL SLA FIX: Reset the absolute clocks to exactly NOW.
-      // Otherwise, the aggressive SLA cron job will see these tickets are > 6 hours old
-      // and immediately rip them away from the new worker within 60 seconds!
-      ticket.createdAt = new Date();
+      // Reset SLA timing using lastEscalatedAt only — do NOT mutate createdAt
+      // (createdAt is the original farmer submission timestamp and must never be changed)
       ticket.lastEscalatedAt = new Date();
 
       ticket.escalationHistory.push({

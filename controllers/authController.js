@@ -139,9 +139,17 @@ const getMe = async (req, res) => {
 
 /**
  * GET /api/auth/demo-credentials
- * Returns one phone number per role for demo login
+ * Returns demo phone numbers per role — DEVELOPMENT ONLY
  */
 const getDemoCredentials = async (req, res) => {
+  // Block this endpoint in production to prevent credential exposure
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      message: 'Demo credentials are not available in production.',
+    });
+  }
+
   try {
     const [farmer, worker, subhead, admin] = await Promise.all([
       User.findOne({ role: 'farmer' }).select('phone'),

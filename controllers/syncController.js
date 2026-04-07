@@ -1,5 +1,6 @@
 const Ticket = require('../models/Ticket');
 const { assignToNearestWorker } = require('../services/escalationService');
+const { uploadImage } = require('../services/mediaService');
 
 /**
  * POST /api/sync
@@ -23,7 +24,7 @@ const syncOfflineTickets = async (req, res) => {
 
     for (const ticketData of tickets) {
       try {
-        const { clientId, description, cropType, category, priority, coordinates } = ticketData;
+        const { clientId, description, cropType, category, priority, coordinates, mediaBase64, mediaMimeType } = ticketData;
 
         if (!clientId || !description) {
           results.errors.push({ clientId, error: 'Missing clientId or description' });
@@ -37,6 +38,19 @@ const syncOfflineTickets = async (req, res) => {
           continue;
         }
 
+        // Handle base64-encoded image if included from the offline queue
+        const mediaUrls = [];
+        if (mediaBase64 && mediaMimeType) {
+          try {
+            const buffer = Buffer.from(mediaBase64, 'base64');
+            const result = await uploadImage(buffer);
+            mediaUrls.push(result.url);
+          } catch (uploadErr) {
+            console.warn(`[SYNC] Image upload failed for ${clientId}:`, uploadErr.message);
+            // Don't fail the whole ticket — just sync without the image
+          }
+        }
+
         const ticket = await Ticket.create({
           clientId,
           farmer: req.user._id,
@@ -44,9 +58,10 @@ const syncOfflineTickets = async (req, res) => {
           cropType,
           category: category || 'other',
           priority: priority || 'medium',
+          mediaUrls,
           location: coordinates
             ? { type: 'Point', coordinates }
-            : { type: 'Point', coordinates: req.user.location.coordinates },
+            : { type: 'Point', coordinates: req.user.location?.coordinates || [0, 0] },
         });
 
         // Trigger worker assignment

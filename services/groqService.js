@@ -1,4 +1,5 @@
 const Groq = require('groq-sdk');
+const axios = require('axios');
 const fs = require('fs');
 
 const groq = new Groq({
@@ -155,24 +156,45 @@ exports.generateRegionalAdvisory = async (district, state) => {
 };
 
 /**
+/**
  * Identify Indian District and State from GPS coordinates
- * @param {number} lat 
- * @param {number} lon 
+ * Primary: Nominatim (OpenStreetMap) — free, deterministic, no AI rate limits
+ * Fallback: Groq Llama-3 — used only if Nominatim is unreachable
+ * @param {number} lat
+ * @param {number} lon
  * @returns {Promise<Object>} - { district, state }
  */
 exports.reverseGeocode = async (lat, lon) => {
+  // PRIMARY: Nominatim (OpenStreetMap)
   try {
-    const prompt = `Identify the Indian District and State for coordinates (${lat}, ${lon}). Return ONLY a JSON object: { "district": "Name", "state": "Name" }`;
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+    const res = await axios.get(url, {
+      headers: { 'User-Agent': 'SCAS-2026 (Smart Crop Advisory System)' },
+      timeout: 5000,
+    });
+    const address = res.data?.address;
+    if (address) {
+      return {
+        district: address.county || address.state_district || address.city || null,
+        state: address.state || null,
+      };
+    }
+  } catch (nominatimErr) {
+    console.warn('[GEOCODE] Nominatim failed, falling back to Groq:', nominatimErr.message);
+  }
+
+  // FALLBACK: Groq Llama-3 (only if Nominatim is unreachable)
+  try {
+    const prompt = `Identify the Indian District and State for GPS coordinates (${lat}, ${lon}). Return ONLY a JSON object: { "district": "Name", "state": "Name" }`;
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
-      temperature: 0, // Deterministic
+      temperature: 0,
     });
-
     return JSON.parse(chatCompletion.choices[0]?.message?.content || '{}');
-  } catch (error) {
-    console.error('[GROQ GEOCODE] Error:', error.message);
+  } catch (groqErr) {
+    console.error('[GEOCODE] Both Nominatim and Groq failed:', groqErr.message);
     return null;
   }
 };

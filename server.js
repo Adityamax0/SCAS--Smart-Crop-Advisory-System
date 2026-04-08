@@ -65,7 +65,7 @@ const app = express();
 // ──────────────────────────────────
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
-    ? process.env.CORS_ORIGIN?.split(',') || []
+    ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://scas-frontend-2026.vercel.app', 'http://localhost:3000'])
     : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],

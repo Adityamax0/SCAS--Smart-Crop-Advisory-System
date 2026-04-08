@@ -95,10 +95,14 @@ const login = async (req, res) => {
     const { phone, password } = req.body;
 
     if (!phone || !password) {
-      return res.status(400).json({ success: false, message: 'Phone and password are required.' });
+      return res.status(400).json({ success: false, message: 'Phone/Email and password are required.' });
     }
 
-    const user = await User.findOne({ phone }).select('+password');
+    // Allow login via either Phone OR Email (since system users are seeded with emails)
+    const user = await User.findOne({ 
+      $or: [{ phone }, { email: phone }] 
+    }).select('+password');
+    
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }

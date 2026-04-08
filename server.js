@@ -173,8 +173,10 @@ const bootstrap = async () => {
     try {
       await initEscalationQueue();
       startEscalationWorker();
+      logger.info('[QUEUE] ✅ BullMQ escalation worker started (Redis-backed, survives restarts)');
     } catch (queueErr) {
-      logger.warn(`[QUEUE] BullMQ init failed — falling back to in-process check: ${queueErr.message}`);
+      logger.warn(`[QUEUE] ⚠️ BullMQ unavailable (${queueErr.message})`);
+      logger.warn('[QUEUE] 🔄 Fallback: using in-process setInterval cron for SLA escalation');
       // Graceful fallback: run escalation inline if Redis is unavailable
       setInterval(async () => {
         try { await runAutoEscalation(); } catch (e) { logger.error('[FALLBACK CRON] Error:', e.message); }

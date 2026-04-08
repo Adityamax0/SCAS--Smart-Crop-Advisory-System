@@ -63,10 +63,17 @@ const app = express();
 // ──────────────────────────────────
 // CORS Configuration
 // ──────────────────────────────────
+const allowedOrigins = [
+  'https://scas-frontend-2026.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(...process.env.CORS_ORIGIN.split(',').map(s => s.trim()));
+}
+
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? (process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['https://scas-frontend-2026.vercel.app', 'http://localhost:3000'])
-    : ['http://localhost:3000', 'http://localhost:5173'],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
